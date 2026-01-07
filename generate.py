@@ -1,18 +1,23 @@
-from ngram_model import build_ngram_model, generate_text
+from ngram_model import FiveGramLanguageModel
 
+print("[INFO] Loading corpus...")
+with open("data/conan_doyle.txt", "r", encoding="utf-8") as f:
+    corpus = f.read()
 
-def main():
-    with open("data/conan_doyle.txt", "r", encoding="utf-8") as f:
-        corpus = f.read()
+model = FiveGramLanguageModel(n=5)
+model.train(corpus)
 
-    model = build_ngram_model(corpus, n=5)
+samples = [
+    "the day was very",
+    "mr sherlock holmes",
+    "i had my doubts",
+    "holmes"
+]
 
-    seed = input("Enter starting text (at least 4 words): ")
-    output = generate_text(seed, model, n=5, length=50)
+print("\n[INFO] Starting text generation...\n")
 
-    print("\nGenerated text:\n")
-    print(output)
-
-
-if __name__ == "__main__":
-    main()
+for s in samples:
+    print("Input :", s)
+    output = model.generate(s)
+    print("Output:", output)
+    print("-" * 60)

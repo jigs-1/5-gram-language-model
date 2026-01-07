@@ -1,48 +1,67 @@
-from collections import defaultdict, Counter
+from collections import defaultdict
+import re
 
+class FiveGramLanguageModel:
+    def __init__(self, n=5):
+        self.n = n
+        self.model = defaultdict(lambda: defaultdict(int))
+        self.context_counts = defaultdict(int)
 
-def build_ngram_model(text, n=5):
-    """
-    Builds a strict n-gram (here 5-gram) language model.
-    Maps (n-1)-word context -> Counter of next words.
-    """
-    tokens = text.lower().split()
-    model = defaultdict(Counter)
+    def preprocess(self, text):
+        """
+        Preprocessing:
+        - lowercase
+        - remove punctuation
+        - tokenize
+        """
+        text = text.lower()
+        text = re.sub(r"[^a-z\s]", "", text)
+        return text.split()
 
-    for i in range(len(tokens) - n + 1):
-        context = tuple(tokens[i:i + n - 1])   # previous 4 words
-        next_word = tokens[i + n - 1]           # 5th word
-        model[context][next_word] += 1
+    def train(self, text):
+        tokens = self.preprocess(text)
 
-    return model
+        if len(tokens) < self.n:
+            print("[INFO] Corpus too small to train a 5-gram model.")
+            return
 
+        for i in range(len(tokens) - self.n + 1):
+            context = tuple(tokens[i:i+self.n-1])
+            next_word = tokens[i+self.n-1]
 
-def generate_text(seed, model, n=5, length=50):
-    """
-    Generates text strictly following the n-gram rule:
-    next word depends ONLY on previous (n-1) words.
-    """
-    tokens = seed.lower().split()
+            self.model[context][next_word] += 1
+            self.context_counts[context] += 1
 
-    if len(tokens) < n - 1:
-        print(f"[ERROR] Seed must contain at least {n-1} words.")
-        return seed
+        print(f"[INFO] Training completed using {len(self.model)} unique contexts.")
 
-    for _ in range(length):
-        context = tuple(tokens[-(n - 1):])
+    def generate(self, seed, max_length=30):
+        tokens = self.preprocess(seed)
 
-        if context not in model:
-            print(
-                "\n[INFO] Context not found in corpus."
-                " Generation stopped as per strict 5-gram rule.\n"
-            )
-            break
+        if len(tokens) < self.n - 1:
+            print("[WARNING] Not enough context. "
+                  "Seed must contain at least 4 words for a 5-gram model.")
+            return seed
 
-        # Choose word with maximum conditional probability
-        next_word = model[context].most_common(1)[0][0]
-        tokens.append(next_word)
+        for step in range(max_length):
+            found = False
 
-    return " ".join(tokens)
+            # Backoff from 4-gram → 1-gram
+            for k in range(self.n-1, 0, -1):
+                context = tuple(tokens[-k:])
 
+                if context in self.model:
+                    if k < self.n - 1:
+                        print(f"[INFO] Backoff applied: using {k}-word context.")
 
+                    next_words = self.model[context]
+                    best_word = max(next_words, key=next_words.get)
+                    tokens.append(best_word)
+                    found = True
+                    break
 
+            if not found:
+                print("[WARNING] Context not found in model. "
+                      "Text generation stopped.")
+                break
+
+        return " ".join(tokens)
