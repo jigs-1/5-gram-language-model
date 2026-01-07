@@ -7,17 +7,21 @@ with open("data/conan_doyle.txt", "r", encoding="utf-8") as f:
 model = FiveGramLanguageModel(n=5)
 model.train(corpus)
 
-samples = [
-    "the day was very",
-    "mr sherlock holmes",
-    "i had my doubts",
-    "holmes"
-]
+print("\n[INFO] 5-gram Language Model ready.")
+print("Type a sentence (at least 4 words).")
+print("Type 'exit' to quit.\n")
 
-print("\n[INFO] Starting text generation...\n")
+while True:
+    user_input = input("Input > ").strip()
 
-for s in samples:
-    print("Input :", s)
-    output = model.generate(s)
-    print("Output:", output)
+    if user_input.lower() == "exit":
+        print("[INFO] Exiting model.")
+        break
+
+    if not user_input:
+        print("[WARNING] Empty input. Please enter some text.")
+        continue
+
+    output = model.generate(user_input)
+    print("Output >", output)
     print("-" * 60)
