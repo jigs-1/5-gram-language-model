@@ -8,13 +8,10 @@ def main():
     model = build_ngram_model(corpus, n=5)
 
     seed = input("Enter starting text (at least 4 words): ")
+    output = generate_text(seed, model, n=5, length=50)
 
-    try:
-        output = generate_text(seed, model, n=5, length=50)
-        print("\nGenerated text:\n")
-        print(output)
-    except ValueError as e:
-        print(e)
+    print("\nGenerated text:\n")
+    print(output)
 
 
 if __name__ == "__main__":
