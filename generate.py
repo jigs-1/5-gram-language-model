@@ -3,11 +3,18 @@ from ngram_model import build_ngram_model, generate_text
 
 def main():
     with open("data/conan_doyle.txt", "r", encoding="utf-8") as f:
-        text = f.read()
+        corpus = f.read()
 
-    model = build_ngram_model(text, n=5)
-    generated = generate_text(model, n=5, length=100)
-    print(generated)
+    model = build_ngram_model(corpus, n=5)
+
+    seed = input("Enter starting text (at least 4 words): ")
+
+    try:
+        output = generate_text(seed, model, n=5, length=50)
+        print("\nGenerated text:\n")
+        print(output)
+    except ValueError as e:
+        print(e)
 
 
 if __name__ == "__main__":
