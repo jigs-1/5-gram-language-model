@@ -3,10 +3,6 @@ import random
 
 
 def build_ngram_model(text, n=5):
-    """
-    Build an n-gram language model.
-    Returns a dictionary mapping (n-1)-word context -> list of possible next words.
-    """
     tokens = text.lower().split()
     model = defaultdict(list)
 
@@ -18,19 +14,21 @@ def build_ngram_model(text, n=5):
     return model
 
 
-def generate_text(model, n=5, length=100):
+def generate_text(seed, model, n=5, length=50):
     """
-    Generate text using the trained n-gram model.
+    seed: starting text provided by user
     """
-    # Pick a random starting context
-    context = random.choice(list(model.keys()))
-    generated = list(context)
+    tokens = seed.lower().split()
+
+    if len(tokens) < n - 1:
+        raise ValueError("Seed text must have at least {} words".format(n - 1))
 
     for _ in range(length):
-        next_words = model.get(tuple(generated[-(n - 1):]))
-        if not next_words:
+        context = tuple(tokens[-(n - 1):])
+        if context not in model:
             break
-        generated.append(random.choice(next_words))
+        tokens.append(random.choice(model[context]))
 
-    return " ".join(generated)
+    return " ".join(tokens)
+
 
